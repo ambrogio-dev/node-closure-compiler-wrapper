@@ -1,0 +1,36 @@
+{
+  "name": "closure-compiler-wrapper",
+  "version": "1.0.0",
+  "description": "Google Closure Compiler wrapper for Node.js",
+  "keywords": [
+    "compiler",
+    "minify",
+    "minifier",
+    "closure",
+    "optimizer"
+  ],
+  "url": "http://github.com/simone-sanfratello/node-closure-compiler-wrapper",
+  "author": "Simone Sanfratello <simone.sanfra@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/simone-sanfratello/node-closure-compiler-wrapper.git"
+  },
+  "engines": {
+    "node": ">= 0.12.x"
+  },
+  "dependencies": {
+    "a-toolbox": "x",
+    "google-closure-compiler": "x",
+    "semver-compare": "x"
+  },
+  "scripts": {
+    "test": "istanbul cover test.js -x test.js"
+  },
+  "tonicExampleFilename": "test.js",
+  "files": [
+    "main.js",
+    "test.js"
+  ],
+  "main": "main"
+}
