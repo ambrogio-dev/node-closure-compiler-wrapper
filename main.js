@@ -51,7 +51,7 @@ var Compile = function (prm) {
 
   // / check java installed and minimum version
   var __main = function () {
-    if (!prm.output.list) prm.output.list = []
+  //  if (!prm.output.list) prm.output.list = []
     if (!prm.output.mode) prm.output.mode = Compile.mode.STRING
     if (!prm.output.way) prm.output.way = Compile.output.SINGLE
     if (!prm.output.fileMask) prm.output.fileMask = '{name}.min.js'
@@ -61,8 +61,11 @@ var Compile = function (prm) {
       return
     }
 
-    // / if output way is multi but there is only a single file, then output way will be single
-    if (prm.output.way === Compile.output.MULTI && prm.output.list.length < 2) {
+    // / if output way is multi but there is only a single input
+    // / then output way will be single
+    if (prm.output.way === Compile.output.MULTI && (
+      prm.input.list instanceof Array && prm.input.list.length < 2 ||
+      tools.object.getKeys(prm.input.list).length < 2)) {
       prm.output.way = Compile.output.SINGLE
     }
 
@@ -97,10 +100,12 @@ var Compile = function (prm) {
           var _output = {}
           var i
 
+          // / setup tasks
           var _tasks = new tools.Tasks(function () {
             prm.callback && prm.callback(_err, _output)
           })
 
+          // / compile each input
           var _compile = function (i) {
             __compile({
               i: i,
@@ -119,10 +124,11 @@ var Compile = function (prm) {
             })
           }
 
-          for (i = 0; i < prm.input.length; i++) {
+          // / launch compile's tasks
+          for (i in prm.input.list) {
             _tasks.todo('#' + i)
           }
-          for (i = 0; i < prm.input.length; i++) {
+          for (i in prm.input.list) {
             _compile(i)
           }
         }
@@ -163,8 +169,6 @@ var Compile = function (prm) {
       _options.js_output_file = __outputFilename(_input, _output, _i)
     }
 
-    // TODO multiple output: file and string
-
     var _compiler = new GoogleCompiler(_options)
     var _process = _compiler.run(function (exitcode, stdout, stderr) {
       // console.log('exitCode:', exitcode, 'stdOut:', stdout, 'stdErr:', stderr)
@@ -196,7 +200,7 @@ var Compile = function (prm) {
 
     var _tasks = new tools.Tasks(function () {
       prm.input.list = _inputList
-      if (_outputList && (!prm.output.list || prm.output.list.length < prm.input.list.length)) {
+      if (_outputList && !prm.output.list) {
         prm.output.list = _outputList
       }
       callback(_err)
@@ -233,8 +237,8 @@ var Compile = function (prm) {
 
   var __outputFilename = function (input, output, i) {
     var _outputFile, _maskData
-    if (output.list instanceof Array) {
-      if (output.list[i]) {
+    if (!output.list || output.list instanceof Array) {
+      if (output.list && output.list[i]) {
         _outputFile = output.list[i]
       } else {
         // / compose masked output

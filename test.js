@@ -6,7 +6,9 @@ var Compile = require('./main')
 
 // test
 
-var _tasks = new tools.Tasks(function () {}, {chrono: true})
+var _tasks = new tools.Tasks(function () {
+  process.exit(0)
+}, {chrono: true})
 
 var _jsCode0 = 'var a = 6 + 3'
 var _jsCode1 = 'var b = 1 + 2'
@@ -17,7 +19,7 @@ var options = {
   language_in: 'ECMASCRIPT5'
 }
 
-var _callback = function (tag) {
+var _callback = function (tag, log) {
   return function (err, out) {
     if (err) {
       console.error(err)
@@ -26,10 +28,10 @@ var _callback = function (tag) {
     //    console.log(out)
     var _chrono = _tasks.done(tag).chrono
     console.log('complete', tag, 'in', _chrono, 'ms')
+    if (log) console.log(out)
   }
 }
 
-/*
 // single file to single string
 _tasks.todo('single-file-to-single-string')
 Compile({
@@ -244,7 +246,6 @@ Compile({
   options: options,
   callback: _callback('multi-string-to-single-file')
 })
-*/
 
 // multi string to multi string
 _tasks.todo('multi-string-to-multi-string')
@@ -258,7 +259,7 @@ Compile({
     way: Compile.output.MULTI
   },
   options: options,
-  callback: _callback('multi-string-to-multi-string')
+  callback: _callback('multi-string-to-multi-string', true)
 })
 
 // multi string to multi file
