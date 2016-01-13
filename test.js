@@ -4,6 +4,9 @@ var tools = require('a-toolbox')
 
 var Compile = require('./main')
 
+Compile.options()
+return
+
 // test
 
 var _tasks = new tools.Tasks(function () {

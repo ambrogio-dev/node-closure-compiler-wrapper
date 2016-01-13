@@ -1,13 +1,12 @@
 'use strict'
 
 /**
- * @todo add mode buffer?
- * @todo stop on first error
- * @todo jsdoc
- * @todo examples
- * @todo test and coverage
  * @todo readme.md
- * @todo verbose on|off
+ * @todo stop on first error on multi input or output
+ * @todo jsdoc
+ * @todo more examples
+ * @todo test and coverage
+ * @todo use stdin for input = string? do benchmarks
  */
 
 var spawn = require('child_process').spawn
@@ -18,6 +17,7 @@ var os = require('os')
 var GoogleCompiler = require('google-closure-compiler').compiler
 var semverCompare = require('semver-compare')
 var tools = require('a-toolbox')
+var jsfy = require('jsfy')
 
 var javaMinVersion = '1.7'
 
@@ -26,17 +26,22 @@ var javaMinVersion = '1.7'
 // absolute path the contrib folder which contains
 // console.log(GoogleCompiler.CONTRIB_PATH)
 
-// prm: input: mode: file, string
-// list: []
-// prm: ouput: mode: file, string
-// way: multi | single, default single
-// fileMask: default %name.min.js
-// options: https://developers.google.com/closure/compiler/docs/api-ref
-
 /**
+ * check java installed and minimum required version
+ * default output: single string
+ *
  * @param {object} prm
+ * @param {boolean} [prm.verbose=false] enable verbose mode
  * @param {object} prm.input
- * @param {function(err,data)} prm.callback
+ * @param {Compile.mode} prm.input.mode input mode: file(s) or string(s)
+ * @param {Array|object} prm.input.list array of file(s) or string(s), or object of strings
+ * @param {object} prm.output
+ * @param {Compile.mode} [prm.output.mode=Compile.mode.STRING] output mode: file(s) or string(s)
+ * @param {Array|object} [prm.output.list] array of file(s) or string(s), if not declared will be use fileMask
+ * @param {Compile.way} [prm.output.way=Compile.output.SINGLE] output way, single or multiple; multiple output need multiple input
+ * @param {string} [prm.output.fileMask=%name.min.js] will apply mask to output file from input file
+ * @param {object} prm.options @see options.js @see https://developers.google.com/closure/compiler/docs/api-ref
+ * @param {function(err,data)} prm.callback data contains output string(s) as single string or object
  */
 var Compile = function (prm) {
   /**
@@ -49,9 +54,15 @@ var Compile = function (prm) {
     !prm.output || !prm.output.mode)
   }
 
-  // / check java installed and minimum version
+  var __log = function () {
+    if (!prm.verbose)
+      return
+    var _args = Array.prototype.slice.call(arguments)
+    console.log.apply(console, _args)
+  }
+
   var __main = function () {
-  //  if (!prm.output.list) prm.output.list = []
+    // / set defualt data
     if (!prm.output.mode) prm.output.mode = Compile.mode.STRING
     if (!prm.output.way) prm.output.way = Compile.output.SINGLE
     if (!prm.output.fileMask) prm.output.fileMask = '{name}.min.js'
@@ -70,23 +81,28 @@ var Compile = function (prm) {
     }
 
     // / check java version
+    __log('get java version detected')
+
     __java(function (err, version) {
       if (err || !version) {
         prm.callback && prm.callback(new Error("java is not installed or can't detect version" +
           '; run \njava -version\n for details'))
         return
       }
-      // console.log('java detected, version', version)
+      __log('java detected, version', version)
+
       // / check java version >= javaMinVersion
       if (semverCompare(version, javaMinVersion) < 0) {
-        prm.callback && prm.callback(new Error('java installed, version ' + version + ' not enough, need >= ' + javaMinVersion +
+        prm.callback && prm.callback(new Error('java installed, version ' + version + ' not enough, required >= ' + javaMinVersion +
           '; run \njava -version\n for details'))
         return
       }
 
       var _run = function () {
-        // / single output
         if (prm.output.way === Compile.output.SINGLE) {
+          // / single output
+          __log('single output')
+
           __compile({
             i: 0,
             input: prm.input,
@@ -96,6 +112,8 @@ var Compile = function (prm) {
           })
         } else {
           // / multiple output
+          __log('single output')
+
           var _err = null
           var _output = {}
           var i
@@ -149,7 +167,10 @@ var Compile = function (prm) {
     })
   }
 
+  /**
+   */
   var __compile = function (prm) {
+    __log('compile #' + prm.i, '...')
     // / setup compiler
     var _options = tools.object.clone(prm.options)
     var _i = prm.i
@@ -169,9 +190,12 @@ var Compile = function (prm) {
       _options.js_output_file = __outputFilename(_input, _output, _i)
     }
 
+    __log('compile #' + prm.i, 'start, options', _options)
+
     var _compiler = new GoogleCompiler(_options)
     var _process = _compiler.run(function (exitcode, stdout, stderr) {
-      // console.log('exitCode:', exitcode, 'stdOut:', stdout, 'stdErr:', stderr)
+      __log('compile #' + prm.i, 'done')
+
       // / return error
       if (stderr) {
         _callback && _callback(new Error(stderr))
@@ -190,6 +214,7 @@ var Compile = function (prm) {
 
   /**
    * write input strings to temp files
+   * @param {function(err)} callback
    */
   var __adjustInputStrings = function (callback) {
     var _err = null
@@ -209,8 +234,10 @@ var Compile = function (prm) {
     var _write = function (i) {
       var _file = os.tmpdir() + '/' + tools.random.hex()
       _inputList.push(_file)
+      __log('write file', _file, '#' + i)
       fs.writeFile(_file, prm.input.list[i], function (err) {
         if (err) _err = err
+        __log('wrote file', _file, '#' + i)
         _tasks.done('#' + i)
       })
     }
@@ -257,6 +284,11 @@ var Compile = function (prm) {
       }
       _outputFile = tools.string.template(output.fileMask, _maskData)
     }
+
+    __log('set output filename', _outputFile, 'from',
+      'input.list', input.list[i], 'output.list', output.list ? output.list[i] : null,
+      'output.fileMask', output.fileMask)
+
     return _outputFile
   }
 
@@ -283,6 +315,68 @@ var Compile = function (prm) {
   }
 
   __main()
+}
+
+/**
+ * run $java -jar node_modules/google-closure-compiler/compiler.jar --help
+ * format output in js into options.js
+ */
+Compile.options = function () {
+  var _spawn = spawn('java', ['-jar', GoogleCompiler.COMPILER_PATH, '--help'])
+  var _err = ''
+  var _out = ''
+
+  _spawn.on('error', function (err) {
+    console.log('error', err)
+  })
+
+  _spawn.stderr.on('data', function (data) {
+    _err += data
+  })
+  _spawn.stderr.on('end', function (data) {
+    // console.log('error', _err)
+  })
+
+  _spawn.stdout.on('data', function (data) {
+    _out += data
+  })
+  _spawn.stdout.on('end', function (data) {
+    // console.log('out', _out)
+    _parse()
+  })
+
+  var _parse = function () {
+    var _lines = _out.split('\n')
+    var _options = {}
+
+    for (var i in _lines) {
+      var _line = _lines[i]
+      var _key, _parts
+
+      // try {
+      if (_line.indexOf(' --') === 0) {
+        _parts = _line.match(/\s--([\w\_]+)\s([\w\[\]\s\_|]+)*\s*:\s([^\n]+)/i)
+        if (_parts) {
+          _key = _parts[1]
+          _options[_key] = { v: _parts[2].trim(), d: _parts[3].trim() }
+        }
+      } else {
+        _parts = _line.split(':')
+        if (_parts[1]) {
+          _options[_key].v += _parts[0].trim()
+          _options[_key].d += _parts[1].trim()
+        } else {
+          _options[_key].d += _parts[0].trim()
+        }
+      }
+    //      } catch (exc) {
+    //        console.error('error on line', _line)
+    //      }
+    }
+    console.log(_options)
+    TODO write jsfy
+  }
+
 }
 
 Compile.mode = {

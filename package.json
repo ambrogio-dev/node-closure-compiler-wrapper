@@ -30,6 +30,7 @@
   "tonicExampleFilename": "test.js",
   "files": [
     "main.js",
+    "options.js",
     "test.js"
   ],
   "main": "main"

@@ -1,4 +1,5 @@
 
+// java -jar node_modules/google-closure-compiler/compiler.jar --help
 
 // Generate $inject properties for AngularJS for functions annotated with @ngInject
 // angular_pass: false
