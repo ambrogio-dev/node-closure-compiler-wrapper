@@ -1,6 +1,6 @@
 {
   "name": "closure-compiler-wrapper",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Google Closure Compiler wrapper for Node.js",
   "keywords": [
     "compiler",
@@ -27,7 +27,6 @@
   "scripts": {
     "test": "istanbul cover test.js -x test.js"
   },
-  "tonicExampleFilename": "test.js",
   "files": [
     "main.js",
     "options.js",

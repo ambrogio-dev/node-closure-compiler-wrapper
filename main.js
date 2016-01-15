@@ -5,8 +5,9 @@
  * @todo stop on first error on multi input or output
  * @todo jsdoc
  * @todo more examples
- * @todo test and coverage
+ * @todo coverage
  * @todo use stdin for input = string? do benchmarks
+ * @todo choose how many core use (can be done wit compiler?)
  */
 
 var spawn = require('child_process').spawn
@@ -34,7 +35,7 @@ var javaMinVersion = '1.7'
  * @param {boolean} [prm.verbose=false] enable verbose mode
  * @param {object} prm.input
  * @param {Compile.mode} prm.input.mode input mode: file(s) or string(s)
- * @param {Array|object} prm.input.list array of file(s) or string(s), or object of strings
+ * @param {Array|object|string} prm.input.list array of file(s) or string(s), or object of strings, or single string
  * @param {object} prm.output
  * @param {Compile.mode} [prm.output.mode=Compile.mode.STRING] output mode: file(s) or string(s)
  * @param {Array|object} [prm.output.list] array of file(s) or string(s), if not declared will be use fileMask
@@ -71,6 +72,8 @@ var Compile = function (prm) {
       prm.callback && prm.callback(new Error('invalid params'))
       return
     }
+
+    if (typeof prm.input.list === 'string') prm.input.list = [prm.input.list]  
 
     // / if output way is multi but there is only a single input
     // / then output way will be single
@@ -195,6 +198,7 @@ var Compile = function (prm) {
     var _compiler = new GoogleCompiler(_options)
     var _process = _compiler.run(function (exitcode, stdout, stderr) {
       __log('compile #' + prm.i, 'done')
+      __log('ouput for compile #' + prm.i, 'stdout', stdout, 'stderr', stderr)
 
       // / return error
       if (stderr) {
@@ -206,9 +210,10 @@ var Compile = function (prm) {
       }
     })
     _process.stderr.on('data', function (data) {
-      // data.toString('utf8') => The compiler is waiting for input via stdin
-      // / check performance if input = string then _process.stdin.write()
-      _process.kill()
+      // @todo check performance if input = string then _process.stdin.write()
+      if(data.toString('utf8').indexOf('The compiler is waiting for input via stdin') !== -1) {
+        _process.kill()
+      }
     })
   }
 
@@ -318,8 +323,8 @@ var Compile = function (prm) {
 }
 
 /**
+ * tool for generate documentation file options.js
  * run $java -jar node_modules/google-closure-compiler/compiler.jar --help
- * format output in js into options.js
  */
 Compile.options = function () {
   var _spawn = spawn('java', ['-jar', GoogleCompiler.COMPILER_PATH, '--help'])
@@ -355,26 +360,37 @@ Compile.options = function () {
 
       // try {
       if (_line.indexOf(' --') === 0) {
-        _parts = _line.match(/\s--([\w\_]+)\s([\w\[\]\s\_|]+)*\s*:\s([^\n]+)/i)
+        _parts = _line.match(/\s--([\w\_-]+)\s(\([,-\s\w]+\))*\s*([\w\[\]\s\_-|]+)*\s*:\s([^\n]+)/i)
         if (_parts) {
           _key = _parts[1]
-          _options[_key] = { v: _parts[2].trim(), d: _parts[3].trim() }
+          _options[_key] = {
+            value: _parts[3] ? _parts[3].trim() : '',
+            descrition: _parts[4] ? _parts[4].trim() : '',
+            short: _parts[2] ? tools.string.trim(_parts[2], ['() ']) : ''
+          }
+        } else {
+          console.error('ERROR REGEXP MATCH', _line)
         }
       } else {
-        _parts = _line.split(':')
+        _parts = _line.split(' : ')
         if (_parts[1]) {
-          _options[_key].v += _parts[0].trim()
-          _options[_key].d += _parts[1].trim()
+          _options[_key].value += _parts[0].trim()
+          _options[_key].descrition += _parts[1].trim()
         } else {
-          _options[_key].d += _parts[0].trim()
+          _options[_key].descrition += _parts[0].trim()
         }
       }
     //      } catch (exc) {
     //        console.error('error on line', _line)
     //      }
     }
-    console.log(_options)
-    TODO write jsfy
+    // console.log(_options)
+    // write file
+    fs.writeFile('./options.js', jsfy(_options, 2, '\n'), function (err) {
+      if (err) {
+        console.error(err)
+      }
+    })
   }
 
 }

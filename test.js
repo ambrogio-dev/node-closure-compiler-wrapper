@@ -4,8 +4,8 @@ var tools = require('a-toolbox')
 
 var Compile = require('./main')
 
-Compile.options()
-return
+//Compile.options()
+//return
 
 // test
 
@@ -13,7 +13,7 @@ var _tasks = new tools.Tasks(function () {
   process.exit(0)
 }, {chrono: true})
 
-var _jsCode0 = 'var a = 6 + 3'
+var _jsCode0 = 'function x() {var a = 4; b = 5; var c = a+b; return c}; x(6)'
 var _jsCode1 = 'var b = 1 + 2'
 var _jsCode2 = 'var c = 4-5'
 
@@ -53,6 +53,7 @@ Compile({
 // single file to single file
 _tasks.todo('single-file-to-single-file')
 Compile({
+  verbose: true,
   input: {
     mode: Compile.mode.FILE,
     list: ['./main.js']
@@ -194,7 +195,7 @@ _tasks.todo('single-string-to-multi-string')
 Compile({
   input: {
     mode: Compile.mode.STRING,
-    list: [_jsCode0]
+    list: _jsCode0
   },
   output: {
     mode: Compile.mode.STRING,
