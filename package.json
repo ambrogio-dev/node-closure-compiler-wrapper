@@ -1,6 +1,6 @@
 {
   "name": "closure-compiler-wrapper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Google Closure Compiler wrapper for Node.js",
   "keywords": [
     "compiler",
@@ -22,7 +22,8 @@
   "dependencies": {
     "a-toolbox": "x",
     "google-closure-compiler": "x",
-    "semver-compare": "x"
+    "semver-compare": "x",
+    "jsfy": "x"
   },
   "scripts": {
     "test": "istanbul cover test.js -x test.js"
