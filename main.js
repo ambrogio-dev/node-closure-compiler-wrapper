@@ -1,15 +1,5 @@
 'use strict'
 
-/**
- * @todo readme.md
- * @todo stop on first error on multi input or output
- * @todo jsdoc
- * @todo more examples
- * @todo coverage
- * @todo use stdin for input = string? do benchmarks
- * @todo choose how many core use (can be done wit compiler?)
- */
-
 var spawn = require('child_process').spawn
 var fs = require('fs')
 var path = require('path')
@@ -18,7 +8,6 @@ var os = require('os')
 var GoogleCompiler = require('google-closure-compiler').compiler
 var semverCompare = require('semver-compare')
 var tools = require('a-toolbox')
-var jsfy = require('jsfy')
 
 var javaMinVersion = '1.7'
 
@@ -43,6 +32,10 @@ var javaMinVersion = '1.7'
  * @param {string} [prm.output.fileMask=%name.min.js] will apply mask to output file from input file
  * @param {object} prm.options @see options.js @see https://developers.google.com/closure/compiler/docs/api-ref
  * @param {function(err,data)} prm.callback data contains output string(s) as single string or object
+ *
+ * @todo stop on first error on multi input or output
+ * @todo coverage
+ * @todo use stdin for input = string? do benchmarks
  */
 var Compile = function (prm) {
   /**
@@ -364,8 +357,8 @@ Compile.options = function () {
           _key = _parts[1]
           _options[_key] = {
             value: _parts[3] ? _parts[3].trim() : '',
-            description: _parts[4] ? _parts[4].trim() : '',
-            short: _parts[2] ? tools.string.trim(_parts[2], ['() ']) : ''
+            description: _parts[4] ? _parts[4].trim() : ''
+            // short: _parts[2] ? tools.string.trim(_parts[2], ['() ']) : ''
           }
         } else {
           console.error('ERROR REGEXP MATCH', _line)
@@ -398,7 +391,6 @@ Compile.options = function () {
       }
     })
   }
-
 }
 
 Compile.mode = {
