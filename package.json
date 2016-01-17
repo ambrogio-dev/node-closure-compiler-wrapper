@@ -1,6 +1,6 @@
 {
   "name": "closure-compiler-wrapper",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "Google Closure Compiler wrapper for Node.js",
   "keywords": [
     "compiler",
