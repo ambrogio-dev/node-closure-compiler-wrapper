@@ -56,8 +56,7 @@ var Compile = function (prm) {
   }
 
   var __log = function () {
-    if (!prm.verbose)
-      return
+    if (!prm.verbose) return
     var _args = Array.prototype.slice.call(arguments)
     console.log.apply(console, _args)
   }
@@ -73,7 +72,7 @@ var Compile = function (prm) {
       return
     }
 
-    if (typeof prm.input.list === 'string') prm.input.list = [prm.input.list]  
+    if (typeof prm.input.list === 'string') prm.input.list = [prm.input.list]
 
     // / if output way is multi but there is only a single input
     // / then output way will be single
@@ -211,7 +210,7 @@ var Compile = function (prm) {
     })
     _process.stderr.on('data', function (data) {
       // @todo check performance if input = string then _process.stdin.write()
-      if(data.toString('utf8').indexOf('The compiler is waiting for input via stdin') !== -1) {
+      if (data.toString('utf8').indexOf('The compiler is waiting for input via stdin') !== -1) {
         _process.kill()
       }
     })

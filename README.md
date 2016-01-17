@@ -7,9 +7,11 @@
 
 [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MRV4AM2CA9F78 "Donate using Paypal")
 
-Wrap the latest version of [Google Closure Compiler](https://www.npmjs.com/package/google-closure-compiler)  
+Wrap Google Closure Compiler for easily use strings or files as input or output, either
+single or multiple  
+Wrap the latest version by npm [google-closure-compiler](https://www.npmjs.com/package/google-closure-compiler)  
 See https://developers.google.com/closure/compiler/ for more informations  
-NOTE: need JDK 7 or latest
+NOTE: need JDK 7 installed or latest, will be checked on runtime
 
 ## Npm Installation
 
@@ -17,7 +19,58 @@ NOTE: need JDK 7 or latest
 $ npm install closure-compiler-wrapper
 ```
 
-## Example
+## Usage
+
+```js
+var compiler = require('closure-compiler-wrapper')
+
+compiler({
+  input: {
+    mode: Compile.mode.FILE,
+    list: ['./one.js', './two.js', './three.js']
+  },
+  output: {
+    mode: Compile.mode.STRING
+    list: ['./one-compiled.js', './two.js', './three.js']
+    way: Compile.output.SINGLE,
+    fileMask './deploy/{name}.min.js'
+  },
+  options: options,
+  callback: function(err, compiled) { }
+})
+
+```
+
+**Arguments**
+- **verbose** {true|false} enable verbose mode if true, default is false
+- **input** {Object}
+  - **mode** {*compiler.mode.FILE | compiler.mode.STRING*} indicates what **input.list** contains, default is *compiler.mode.STRING*
+  - **list** {Array|Object|string} input as (from different input will be possible different output):  
+    - files array
+    ````js
+    ['./js/one.js', './js/two.js', './js/three.js']
+    ````
+    - strings array
+    ````js
+    ['var a = 1', 'var b = 2', 'var c = 3']
+    ````
+    - strings as object key>value (see multiple output why use this way)
+    ````js
+    {one: 'var a = 1', two: 'var b = 2', three: 'var c = 3'}
+    ````
+    - single string
+    ````js
+    'var f = function(a, b) { return a * b }'
+    ````
+- **output** {Object}
+  - **mode** {*compiler.mode.FILE | compiler.mode.STRING*} indicates the mode of the output; if *compiler.mode.STRING* the output will be in callback
+  - **way** {*compiler.output.SINGLE | compiler.output.MULTI*} indicates the way of the output, default is *compiler.output.SINGLE*
+  - **fileMask** {string} mask to apply to compiled files, single or multiple output, default is *{name}.min.js*
+  - **list** {Array} for multiple output, list name for each file in input; if set, fileMask will be ignored
+- **options** {Object} Google Closure Compiler options, see [options.js]( https://github.com/simone-sanfratello/node-closure-compiler-wrapper/blob/master/options.js) for full list (it's compiler --help parsed as JSON)
+- **callback** {function(err, compiled)} callback when the operation is done, if output.mode is compiler.mode.STRING, *compiled* contains the output
+
+## Examples
 
 ```js
 var compiler = require('closure-compiler-wrapper')
@@ -68,9 +121,9 @@ compiler({
 
 ```
 
-see test.js for more examples
+see [test.js]( https://github.com/simone-sanfratello/node-closure-compiler-wrapper/blob/master/test.js) for more examples
 
-**NOTE: multiple operation are very expensive and can easily freeze the machine until end**
+**NOTE: multiple operations are very expensive and can easily freeze the machine until end**
 
 ### jsdoc
 
