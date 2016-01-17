@@ -29,7 +29,7 @@ var javaMinVersion = '1.7'
  * @param {Compile.mode} [prm.output.mode=Compile.mode.STRING] output mode: file(s) or string(s)
  * @param {Array|object} [prm.output.list] array of file(s) or string(s), if not declared will be use fileMask
  * @param {Compile.way} [prm.output.way=Compile.output.SINGLE] output way, single or multiple; multiple output need multiple input
- * @param {string} [prm.output.fileMask=%name.min.js] will apply mask to output file from input file
+ * @param {string} [prm.output.fileMask={name}.min.js] will apply mask to output file from input file
  * @param {object} prm.options @see options.js @see https://developers.google.com/closure/compiler/docs/api-ref
  * @param {function(err,data)} prm.callback data contains output string(s) as single string or object
  *
