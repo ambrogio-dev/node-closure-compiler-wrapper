@@ -364,7 +364,7 @@ Compile.options = function () {
           _key = _parts[1]
           _options[_key] = {
             value: _parts[3] ? _parts[3].trim() : '',
-            descrition: _parts[4] ? _parts[4].trim() : '',
+            description: _parts[4] ? _parts[4].trim() : '',
             short: _parts[2] ? tools.string.trim(_parts[2], ['() ']) : ''
           }
         } else {
@@ -374,9 +374,9 @@ Compile.options = function () {
         _parts = _line.split(' : ')
         if (_parts[1]) {
           _options[_key].value += _parts[0].trim()
-          _options[_key].descrition += _parts[1].trim()
+          _options[_key].description += '\n\t//' + _parts[1].trim()
         } else {
-          _options[_key].descrition += _parts[0].trim()
+          _options[_key].description += '\n\t//' + _parts[0].trim()
         }
       }
     //      } catch (exc) {
@@ -385,7 +385,14 @@ Compile.options = function () {
     }
     // console.log(_options)
     // write file
-    fs.writeFile('./options.js', jsfy(_options, 2, '\n'), function (err) {
+    var _output = []
+    for (i in _options) {
+      var _opt = _options[i]
+      _output.push('\t// ' + _opt.description + '\n' +
+        '\t' + i + ': ' + (_opt.value ? _opt.value : 'true'))
+    }
+
+    fs.writeFile('./options.js', 'var options = {\n' + _output.join(',\n') + '\n}\n', function (err) {
       if (err) {
         console.error(err)
       }

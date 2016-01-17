@@ -4,8 +4,8 @@ var tools = require('a-toolbox')
 
 var Compile = require('./main')
 
-//Compile.options()
-//return
+Compile.options()
+return
 
 // test
 
