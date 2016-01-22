@@ -17,11 +17,11 @@ var javaMinVersion = '1.7'
 // console.log(GoogleCompiler.CONTRIB_PATH)
 
 /**
- * check java installed and minimum required version
  * default output: single string
  *
  * @param {object} prm
  * @param {boolean} [prm.verbose=false] enable verbose mode
+ * @param {boolean} [prm.checkJava=false] check java installation and required version
  * @param {object} prm.input
  * @param {Compile.mode} prm.input.mode input mode: file(s) or string(s)
  * @param {Array|object|string} prm.input.list array of file(s) or string(s), or object of strings, or single string
@@ -75,22 +75,21 @@ var Compile = function (prm) {
       prm.output.way = Compile.output.SINGLE
     }
 
-    // / check java version
-    __log('get java version detected')
-
     __java(function (err, version) {
-      if (err || !version) {
-        prm.callback && prm.callback(new Error("java is not installed or can't detect version" +
-          '; run \njava -version\n for details'))
-        return
-      }
-      __log('java detected, version', version)
-
-      // / check java version >= javaMinVersion
-      if (semverCompare(version, javaMinVersion) < 0) {
-        prm.callback && prm.callback(new Error('java installed, version ' + version + ' not enough, required >= ' + javaMinVersion +
-          '; run \njava -version\n for details'))
-        return
+      if(!prm.checkJava) {
+        if (err || !version) {
+          prm.callback && prm.callback(new Error("java is not installed or can't detect version" +
+            '; run \njava -version\n for details'))
+          return
+        }
+        __log('java detected, version', version)
+  
+        // / check java version >= javaMinVersion
+        if (semverCompare(version, javaMinVersion) < 0) {
+          prm.callback && prm.callback(new Error('java installed, version ' + version + ' not enough, required >= ' + javaMinVersion +
+            '; run \njava -version\n for details'))
+          return
+        }
       }
 
       var _run = function () {
@@ -295,6 +294,12 @@ var Compile = function (prm) {
    * @param {function(err,version)} callback
    */
   var __java = function (callback) {
+    // / check java version
+    if(!prm.checkJava) {
+      return callback(null, javaMinVersion); };
+    }
+    
+    __log('get java version detected')
     var _spawn = spawn('java', ['-version'])
     _spawn.on('error', function (err) {
       return callback(err, null)
