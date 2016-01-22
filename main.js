@@ -296,7 +296,7 @@ var Compile = function (prm) {
   var __java = function (callback) {
     // / check java version
     if(!prm.checkJava) {
-      return callback(null, javaMinVersion); };
+      return callback(null, javaMinVersion)
     }
     
     __log('get java version detected')
