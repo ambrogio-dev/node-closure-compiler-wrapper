@@ -31,9 +31,13 @@ var javaMinVersion = '1.7'
  * @param {Compile.way} [prm.output.way=Compile.output.SINGLE] output way, single or multiple; multiple output need multiple input
  * @param {string} [prm.output.fileMask={name}.min.js] will apply mask to output file from input file
  * @param {object} prm.options @see options.js @see https://developers.google.com/closure/compiler/docs/api-ref
- * @param {function(err,data)} prm.callback data contains output string(s) as single string or object
+ * @param {function(err,data,response)} prm.callback
+ *    err Error or null
+ *    data contains output string(s) as single string or object
+ *    response contains {stderr:string,errors:number,warnings:number}
  *
  * @todo stop on first error on multi input or output
+ * @todo set multiple compiler runner limit (default 2 or 3)
  * @todo coverage
  * @todo use stdin for input = string? do benchmarks
  */
@@ -194,7 +198,13 @@ var Compile = function (prm) {
 
       // / return error
       if (stderr) {
-        _callback && _callback(new Error(stderr))
+        // parse content
+        var _response = __parseCompilerStderr(stderr)
+        if (_response.errors > 0) {
+          _callback && _callback(new Error(stderr))
+        } else {
+          _callback && _callback(null, stdout, _response)
+        }
       } else {
         // / return stdout: if output si string, will contains compiled
         // / if output is file, will contains nothing
@@ -207,6 +217,20 @@ var Compile = function (prm) {
         _process.kill()
       }
     })
+  }
+
+  var __parseCompilerStderr = function (stderr) {
+    var _return = {errors: 1, stderr: stderr}
+    try {
+      var _lines = stderr.split('\n')
+      var _last = _lines[_lines.length - 2]
+      var _response = _last.match(/([\d]+)\s+error\(s\)\,\s+([\d]+)\s+warning\(s\)/)
+      if (_response) {
+        _return.errors = _response[1]
+        _return.warnings = _response[2]
+      }
+    } catch (exc) {}
+    return _return
   }
 
   /**
@@ -358,7 +382,7 @@ Compile.options = function () {
           _options[_key] = {
             value: _parts[3] ? _parts[3].trim() : '',
             description: _parts[4] ? _parts[4].trim() : ''
-            // short: _parts[2] ? tools.string.trim(_parts[2], ['() ']) : ''
+          // short: _parts[2] ? tools.string.trim(_parts[2], ['() ']) : ''
           }
         } else {
           console.error('ERROR REGEXP MATCH', _line)

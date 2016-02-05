@@ -68,7 +68,7 @@ compiler({
   - **fileMask** {string} mask to apply to compiled files, single or multiple output, default is *{name}.min.js*
   - **list** {Array} for multiple output, list name for each file in input; if set, fileMask will be ignored
 - **options** {Object} Google Closure Compiler options, see [options.js]( https://github.com/simone-sanfratello/node-closure-compiler-wrapper/blob/master/options.js) for full list (it's compiler --help parsed as JSON)
-- **callback** {function(err, compiled)} callback when the operation is done, if output.mode is compiler.mode.STRING, *compiled* contains the output
+- **callback** {function(err,data,response)} callback when the operation is done, if output.mode is compiler.mode.STRING, *compiled* contains the output, *response* contains: *stderr* full stderr output *errors*:errors count *warnings* warnings count
 
 ## Examples
 
@@ -123,9 +123,17 @@ see [test.js]( https://github.com/simone-sanfratello/node-closure-compiler-wrapp
 
 **NOTE: multiple operations are very expensive and can easily freeze the machine until end**
 
+### TODO
+* stop on first error on multi input or output
+* set multiple compiler runner limit (default 2 or 3)
+* coverage
+* use stdin for input = string? do benchmarks
+
+
 ### jsdoc
 
 ````js
+
 /**
  * check java installed and minimum required version
  * default output: single string
@@ -141,7 +149,10 @@ see [test.js]( https://github.com/simone-sanfratello/node-closure-compiler-wrapp
  * @param {Compile.way} [prm.output.way=Compile.output.SINGLE] output way, single or multiple; multiple output need multiple input
  * @param {string} [prm.output.fileMask={name}.min.js] will apply mask to output file from input file
  * @param {object} prm.options @see options.js @see https://developers.google.com/closure/compiler/docs/api-ref
- * @param {function(err,data)} prm.callback data contains output string(s) as single string or object
+ * @param {function(err,data,response)} prm.callback
+ *    err Error or null
+ *    data contains output string(s) as single string or object
+ *    response contains {stderr:string,errors:number,warnings:number}
  */
 ````
 
