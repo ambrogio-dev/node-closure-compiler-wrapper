@@ -7,6 +7,8 @@
 
 [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MRV4AM2CA9F78 "Donate using Paypal")
 
+[![NPM](https://nodei.co/npm-dl/closure-compiler-wrapper.png)](https://nodei.co/npm/closure-compiler-wrapper/)
+
 Wrap Google Closure Compiler for easily use strings or files as input or output, either
 single or multiple  
 Wrap the latest version by npm [google-closure-compiler](https://www.npmjs.com/package/google-closure-compiler)  
