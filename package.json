@@ -20,7 +20,7 @@
     "node": ">= 0.12.x"
   },
   "dependencies": {
-    "a-toolbox": "x",
+    "a-toolbox": "<= 0.0.17",
     "google-closure-compiler": "x",
     "semver-compare": "x",
     "jsfy": "x"
